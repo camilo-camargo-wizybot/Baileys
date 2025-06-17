@@ -113,7 +113,13 @@ export const makeSocket = (config: SocketConfig) => {
 	/** send a raw buffer */
 	const sendRawMessage = async (data: Uint8Array | Buffer) => {
 		if (!ws.isOpen) {
-			throw new Boom('Connection Closed', { statusCode: DisconnectReason.connectionClosed })
+			const error = new Boom('Connection Closed', { statusCode: DisconnectReason.connectionClosed })
+			if (config.onException) {
+				config.onException(error)
+				return
+			} else {
+				throw error
+			}
 		}
 
 		const bytes = noise.encodeFrame(data)
